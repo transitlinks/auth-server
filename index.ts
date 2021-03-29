@@ -8,6 +8,7 @@ import bodyParser from 'body-parser';
 import passport from 'passport';
 
 import { initStrategies } from './passport';
+import { Sequelize } from "sequelize";
 
 const pgSession = pgSessionStore(expressSession);
 
@@ -30,6 +31,24 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 initStrategies(passport);
+
+app.get('/auth/test', async (req, res, next) => {
+
+  console.log('test conn');
+  const sequelize = new Sequelize('postgres://transitlinks:hj6qtl6sme56a4y3@txlinks-pg-do-user-149346-0.a.db.ondigitalocean.com:25060/transitlinks', {
+    dialect: 'postgres',
+    native: true
+  });
+
+  try {
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+
+  res.status(200).send({ test: 'test '});
+});
 
 app.post('/auth/login', (req, res, next) => {
   passport.authenticate('login-local',
