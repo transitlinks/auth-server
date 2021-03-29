@@ -127,7 +127,9 @@ export const initStrategies = (passport) => {
         const email = emails[0].value;
         const photo = `${FB_GRAPH_API}/${profile.id}/picture?type=large`;
         try {
+          log.debug('fb-auth logging in user');
           const user = await login({ email, firstName, lastName, username: `${firstName} ${lastName}`, photo });
+          log.debug('fb-auth user logged in', `user=${user}`);
           await downloadPhoto(photo, user.uuid);
           if (!user.avatar) {
             await User.update({ avatar: `/users/${user.uuid}/photo.jpg`, avatarSource: `/users/${user.uuid}/photo.jpg` }, { where: { uuid: user.uuid } });

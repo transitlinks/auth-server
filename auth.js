@@ -9,8 +9,9 @@ export const login = async (userData) => {
   const { email, firstName, lastName, username, password, photo } = userData;
 
   log.debug('login', `email=${email}`);
-
   let user = await User.findOne({ where: { email } });
+  log.debug('found user', `user=${user}`);
+
   if (!user) {
     log.debug('login', 'create-user', `email=${email}`, `photo=${photo}`, `password=${password}`);
     const pwdHash = !(password && password.length > 0) ? null :
@@ -31,6 +32,8 @@ export const login = async (userData) => {
     const logins = (user.logins || 0) + 1;
     const values = { logins };
     if (photo) values.photo = photo;
+
+    log.debug('update user', `values=${values}`);
     await User.update(values, { where: { id: user.id } });
 
     log.debug('getUser', 'user-found', `user.uuid=${user.get('uuid')}`);
