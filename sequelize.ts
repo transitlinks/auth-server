@@ -9,7 +9,7 @@ const sequelize = new Sequelize(dbUrl, {
   dialectOptions: {
     ssl: APP_ENV === 'stage'
   },
-  logging: false,
+  logging: true,
   define: {
     freezeTableName: true,
   }
