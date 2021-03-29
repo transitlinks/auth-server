@@ -8,20 +8,12 @@ console.log('DB URL', dbUrl);
 const sequelize = new Sequelize(dbUrl, {
   dialect: 'postgres',
   dialectOptions: {
-    ssl: true
+    ssl: false
   },
-  native: true,
   logging: console.log,
   define: {
     freezeTableName: true,
   }
 });
-
-try {
-  await sequelize.authenticate();
-  console.log('Connection has been established successfully.');
-} catch (error) {
-  console.error('Unable to connect to the database:', error);
-}
 
 export default sequelize;
