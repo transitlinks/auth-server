@@ -7,7 +7,10 @@ const dbUrl = DB_URL || `postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PO
 console.log('DB URL', dbUrl);
 const sequelize = new Sequelize(dbUrl, {
   dialect: 'postgres',
-  native: APP_ENV === 'stage'
+  native: APP_ENV === 'stage',
+  define: {
+    freezeTableName: true
+  }
 });
 
 export default sequelize;

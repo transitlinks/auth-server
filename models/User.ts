@@ -17,7 +17,7 @@ class User extends Model {
   }
 }
 
-User.init( {
+User.init({
 
   id: {
     type: DataTypes.INTEGER,
@@ -93,6 +93,7 @@ User.init( {
 }, {
 
   sequelize,
+  modelName: 'User',
   indexes: [
     { fields: ['email'] },
   ]
