@@ -8,7 +8,7 @@ console.log('DB URL', dbUrl);
 const sequelize = new Sequelize(dbUrl, {
   dialect: 'postgres',
   dialectOptions: {
-    ssl: false
+    ssl: APP_ENV === 'stage'
   },
   logging: console.log,
   define: {
