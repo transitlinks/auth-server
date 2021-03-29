@@ -84,5 +84,5 @@ app.get('/auth/logout', (req, res, next) => {
   res.redirect('/');
 });
 
-const port = 3101; //process.env.HTTP_PORT || 6100;
+const port = process.env.AUTH_HTTP_PORT || 6100;
 app.listen(port, () => console.log('App listening on port ' + port));
