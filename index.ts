@@ -8,8 +8,16 @@ import bodyParser from 'body-parser';
 import passport from 'passport';
 
 import { initStrategies } from './passport';
+import { Pool } from 'pg';
 
 const pgSession = pgSessionStore(expressSession);
+const pool = new Pool({
+  max: 10,
+  connectionString: process.env.DB_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 const app = express();
 
@@ -19,10 +27,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressSession({
   store: new pgSession({
-    conObject: {
-      connectionString: process.env.DB_URL,
-      ssl: process.env.APP_ENV === 'stage',
-    }
+    pool
   }),
   secret: 'secret',
   resave: false,
