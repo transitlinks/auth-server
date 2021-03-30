@@ -29,13 +29,6 @@ export const login = async (userData) => {
 
   if (user) {
 
-    const logins = (user.logins || 0) + 1;
-    const values = { logins };
-    if (photo) values.photo = photo;
-
-    log.debug('update user', `values=${values}`);
-    await User.update(values, { where: { id: user.id } });
-
     log.debug('getUser', 'user-found', `user.uuid=${user.get('uuid')}`);
 
     if (password) {
@@ -43,6 +36,13 @@ export const login = async (userData) => {
         throw new Error('Invalid username or password');
       }
     }
+
+    const logins = (user.logins || 0) + 1;
+    const values = { logins };
+    if (photo) values.photo = photo;
+
+    log.debug('update user', `values=${values}`);
+    await User.update(values, { where: { id: user.id } });
 
     return user.json();
 

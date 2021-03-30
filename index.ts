@@ -8,7 +8,6 @@ import bodyParser from 'body-parser';
 import passport from 'passport';
 
 import { initStrategies } from './passport';
-import { Sequelize } from "sequelize";
 
 const pgSession = pgSessionStore(expressSession);
 
@@ -20,7 +19,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressSession({
   store: new pgSession({
-    conString: process.env.DB_URL
+    conObject: {
+      connectionString: process.env.DB_URL,
+      ssl: process.env.APP_ENV === 'stage',
+    }
   }),
   secret: 'secret',
   resave: false,
