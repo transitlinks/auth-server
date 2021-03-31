@@ -11,13 +11,18 @@ import { initStrategies } from './passport';
 import { Pool } from 'pg';
 
 const pgSession = pgSessionStore(expressSession);
-const pool = new Pool({
+const poolSettings: { [key: string ]: string | number | object } = {
   max: 10,
-  connectionString: process.env.DB_URL,
-  ssl: {
+  connectionString: process.env.DB_URL
+};
+
+if (process.env.APP_ENV === 'stage') {
+  poolSettings.ssl = {
     rejectUnauthorized: false
-  }
-});
+  };
+}
+
+const pool = new Pool(poolSettings);
 
 const app = express();
 
