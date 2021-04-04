@@ -7,4 +7,4 @@ RUN ls -al
 RUN bash n lts
 RUN bash n 14.16.0
 RUN npm install --global yarn
-RUN echo fs.inotify.max_user_watches=582222 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+RUN bash echo fs.inotify.max_user_watches=582222 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
