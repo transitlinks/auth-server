@@ -1,5 +1,5 @@
 import { getLog } from './log';
-const log = getLog('core/auth');
+const log = getLog('auth');
 
 import bcrypt from 'bcrypt-nodejs';
 import User from './models/User';
@@ -10,13 +10,11 @@ export const login = async (userData) => {
 
   log.debug('login', `email=${email}`);
   let user = await User.findOne({ where: { email } });
-  log.debug('found user', `user=${user}`);
 
   if (!user) {
     log.debug('login', 'create-user', `email=${email}`, `photo=${photo}`, `password=${password}`);
     const pwdHash = !(password && password.length > 0) ? null :
       bcrypt.hashSync(password, bcrypt.genSaltSync(10), null);
-    console.log("NEW USER");
     user = await User.create({
       email,
       photo,
@@ -31,8 +29,9 @@ export const login = async (userData) => {
 
     log.debug('getUser', 'user-found', `user.uuid=${user.get('uuid')}`);
 
+    const savedPassword = user.get('password');
     if (password) {
-      if (!bcrypt.compareSync(password, user.get('password'))) {
+      if (!savedPassword || !bcrypt.compareSync(password, savedPassword)) {
         throw new Error('Invalid username or password');
       }
     }
@@ -41,7 +40,6 @@ export const login = async (userData) => {
     const values = { logins };
     if (photo) values.photo = photo;
 
-    log.debug('update user', `values=${values}`);
     await User.update(values, { where: { id: user.id } });
 
     return user.json();

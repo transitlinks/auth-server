@@ -83,6 +83,7 @@ export const initStrategies = (passport) => {
       if (email) {
         try {
           const user = await login({ email, password });
+          console.log('logged in');
           const png = jdenticon.toPng(user.uuid, 74);
           if (!user.avatar) {
             const { basePath, avatarSourceFilePath, avatarFilePath } = getAvatarPaths(user, 'png');
@@ -98,6 +99,7 @@ export const initStrategies = (passport) => {
           }
           done(null, user);
         } catch (err) {
+          console.log('return error', err, err.message);
           done({ message: err.message });
         }
       } else {

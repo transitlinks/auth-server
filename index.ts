@@ -87,8 +87,7 @@ app.get('/auth/google/callback',
   });
 
 app.get('/auth/user', (req, res) => {
-  console.log(req.session.id);
-  console.log('has auth', req.isAuthenticated(), req.user);
+  log.debug('/auth/user', `session-id=${req.session.id}`);
   if (req.isAuthenticated()) {
     res.status(200).send({ user: req.user });
   } else {
