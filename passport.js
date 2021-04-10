@@ -5,61 +5,14 @@ import Local from 'passport-local';
 import Facebook from 'passport-facebook';
 import Google from 'passport-google-oauth';
 
-import fs from 'fs';
-import path from 'path';
-import { https } from 'follow-redirects';
-import jdenticon from 'jdenticon';
 import User from './models/User';
 import { login } from './auth';
+import { downloadPhoto, createAvatar } from "./utils";
 
 const {
   AUTH_FB_APPID, AUTH_FB_SECRET, GOOGLE_OAUTH_ID, GOOGLE_OAUTH_SECRET,
-  APP_URL, FB_GRAPH_API, MEDIA_PATH, MEDIA_URL
+  APP_URL, FB_GRAPH_API, MEDIA_URL
 } = process.env;
-
-const downloadPhoto = async (photoUrl, userUuid) => {
-
-  const usersPath = path.join((MEDIA_PATH || path.join(__dirname, 'public')), 'users');
-  const userMediaPath = path.join(usersPath, userUuid);
-  if (!fs.existsSync(userMediaPath)) {
-    fs.mkdirSync(userMediaPath);
-  }
-
-  const mediaFilePath = path.join(userMediaPath, 'photo.jpg');
-
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(mediaFilePath);
-    console.log('GET:', photoUrl);
-    https.get(photoUrl, (response) => {
-      response.pipe(file);
-      file.on('finish', () => {
-        file.close();
-        resolve();
-      });
-    }).on('error', (err) => { // Handle errors
-      fs.unlink(mediaFilePath); // Delete the file async. (But we don't check the result)
-      reject(err.message);
-    });
-  });
-
-};
-
-const getAvatarPaths = (user, extension) => {
-
-  const basePath = MEDIA_PATH || path.join(__dirname, 'public');
-  const userPath = `/users/${user.uuid}`;
-  const avatarSourceFilePath = `${userPath}/avatar-source.${extension}`;
-  const avatarFilePath = `${userPath}/avatar.${extension}`;
-  if (!fs.existsSync(path.join(basePath, userPath))) {
-    fs.mkdirSync(path.join(basePath, userPath));
-  }
-  return {
-    basePath,
-    avatarSourceFilePath,
-    avatarFilePath
-  };
-
-};
 
 export const initStrategies = (passport) => {
 
@@ -83,12 +36,8 @@ export const initStrategies = (passport) => {
       if (email) {
         try {
           const user = await login({ email, password });
-          console.log('logged in');
-          const png = jdenticon.toPng(user.uuid, 74);
           if (!user.avatar) {
-            const { basePath, avatarSourceFilePath, avatarFilePath } = getAvatarPaths(user, 'png');
-            fs.writeFileSync(path.join(basePath, avatarSourceFilePath), png);
-            fs.writeFileSync(path.join(basePath, avatarFilePath), png);
+            const { avatarSourceFilePath, avatarFilePath } = createAvatar(user, 'png');
             const username = user.email.substring(0, user.email.indexOf('@'));
             await User.update({
               photo: `${MEDIA_URL}/${user.uuid}.png`,
@@ -132,9 +81,9 @@ export const initStrategies = (passport) => {
           log.debug('fb-auth logging in user');
           const user = await login({ email, firstName, lastName, username: `${firstName} ${lastName}`, photo });
           log.debug('fb-auth user logged in', `user=${user}`);
-          await downloadPhoto(photo, user.uuid);
+          const photoUrl = await downloadPhoto(photo, user.uuid);
           if (!user.avatar) {
-            await User.update({ avatar: `/users/${user.uuid}/photo.jpg`, avatarSource: `/users/${user.uuid}/photo.jpg` }, { where: { uuid: user.uuid } });
+            await User.update({ avatar: photoUrl, avatarSource: photoUrl }, { where: { uuid: user.uuid } });
           }
           done(null, user);
         } catch (err) {
@@ -175,9 +124,9 @@ export const initStrategies = (passport) => {
         }
         try {
           const user = await login({ email, firstName, lastName, username: `${firstName} ${lastName}`, photo });
-          await downloadPhoto(photo, user.uuid);
+          const photoUrl = await downloadPhoto(photo, user.uuid);
           if (!user.avatar) {
-            await User.update({ avatar: `/users/${user.uuid}/photo.jpg`, avatarSource: `/users/${user.uuid}/photo.jpg` }, { where: { uuid: user.uuid } });
+            await User.update({ avatar: photoUrl, avatarSource: photoUrl }, { where: { uuid: user.uuid } });
           }
           done(null, user);
         } catch (err) {
